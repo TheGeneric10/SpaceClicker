@@ -56,6 +56,46 @@ body::before {
   align-items: center;
 }
 
+.taskbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border-radius: 18px;
+  background: rgba(7, 14, 30, 0.9);
+  border: 1px solid rgba(125, 249, 255, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.taskbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.taskbar-brand span {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.taskbar-resources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.resource-pill {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(125, 249, 255, 0.12);
+  border: 1px solid rgba(125, 249, 255, 0.25);
+  font-size: 0.75rem;
+  letter-spacing: 0.3px;
+}
+
 .brand {
   display: flex;
   flex-direction: column;
@@ -78,6 +118,8 @@ body::before {
   border-radius: 18px;
   padding: 12px 16px;
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   align-items: center;
   gap: 18px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45);
@@ -105,6 +147,7 @@ body::before {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
   gap: 10px;
+  width: 100%;
 }
 
 .stat-card {
@@ -192,6 +235,7 @@ body::before {
   place-items: center;
   cursor: pointer;
   transition: transform 0.2s ease;
+  touch-action: manipulation;
 }
 
 .clicker-core:active {
@@ -230,6 +274,11 @@ body::before {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.orbit-dots {
+  display: flex;
+  gap: 8px;
 }
 
 .planet {
@@ -324,6 +373,13 @@ body::before {
   box-shadow: 0 6px 16px rgba(125, 249, 255, 0.35);
 }
 
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  box-shadow: none;
+  transform: none;
+}
+
 .list {
   display: grid;
   gap: 12px;
@@ -337,11 +393,31 @@ body::before {
   border-radius: 16px;
   background: rgba(8, 15, 32, 0.7);
   border: 1px solid rgba(152, 162, 192, 0.2);
+  gap: 12px;
 }
 
 .list-item span {
   font-size: 0.85rem;
   color: var(--muted);
+}
+
+.inventory-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.inventory-card {
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(8, 15, 32, 0.7);
+  border: 1px solid rgba(152, 162, 192, 0.2);
+  display: grid;
+  gap: 6px;
+}
+
+.inventory-title {
+  font-weight: 600;
 }
 
 .badge {
@@ -386,14 +462,83 @@ body::before {
   padding: 8px 14px;
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 6, 16, 0.75);
+  display: grid;
+  place-items: center;
+  z-index: 10;
+  padding: 16px;
+}
+
+.modal {
+  width: min(720px, 100%);
+  background: rgba(9, 18, 35, 0.96);
+  border-radius: 20px;
+  border: 1px solid rgba(125, 249, 255, 0.3);
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-description {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.modal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.modal-card {
+  background: rgba(8, 15, 32, 0.7);
+  border-radius: 14px;
+  padding: 12px;
+  display: grid;
+  gap: 6px;
+  border: 1px solid rgba(125, 249, 255, 0.18);
+}
+
+.modal-card span {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.modal-list {
+  display: grid;
+  gap: 10px;
+}
+
 @media (max-width: 1100px) {
   .main-grid {
     grid-template-columns: 1fr;
   }
 
+  .taskbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .status-panel {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+@media (max-width: 1200px) and (min-width: 801px) {
+  .main-grid {
+    grid-template-columns: minmax(260px, 1fr) minmax(320px, 1.2fr);
   }
 }
 
@@ -405,5 +550,9 @@ body::before {
   .clicker-core {
     width: 140px;
     height: 140px;
+  }
+
+  .taskbar-resources {
+    justify-content: flex-start;
   }
 }
