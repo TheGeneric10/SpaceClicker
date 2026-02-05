@@ -89,23 +89,6 @@ function StatCard({ label, value }) {
   );
 }
 
-function Modal({ title, description, onClose, children }) {
-  return (
-    <div className="modal-backdrop" role="dialog" aria-modal="true">
-      <div className="modal">
-        <div className="modal-header">
-          <h3>{title}</h3>
-          <button className="button ghost" onClick={onClose}>
-            Close
-          </button>
-        </div>
-        <p className="modal-description">{description}</p>
-        <div className="modal-body">{children}</div>
-      </div>
-    </div>
-  );
-}
-
 function App() {
   const [energy, setEnergy] = useState(0);
   const [coins, setCoins] = useState(120);
@@ -114,7 +97,6 @@ function App() {
   const [tokens, setTokens] = useState(3);
   const [universeIndex, setUniverseIndex] = useState(0);
   const [upgradeState, setUpgradeState] = useState({});
-  const [activeModal, setActiveModal] = useState(null);
 
   const level = useMemo(() => Math.floor(energy / 30) + 1, [energy]);
 
@@ -178,8 +160,6 @@ function App() {
     setEnergy((prev) => prev + 45);
   }, []);
 
-  const closeModal = () => setActiveModal(null);
-
   useEffect(() => {
     const handleKey = (event) => {
       if (event.repeat) {
@@ -199,23 +179,6 @@ function App() {
 
   return (
     <div className="app">
-      <nav className="taskbar">
-        <div className="taskbar-brand">
-          <div className="player-avatar">SC</div>
-          <div>
-            <strong>SpaceClicker</strong>
-            <span>Galaxy Ops</span>
-          </div>
-        </div>
-        <div className="taskbar-resources">
-          <div className="resource-pill">Coins · {coins.toLocaleString()}</div>
-          <div className="resource-pill">Money · ${money.toLocaleString()}</div>
-          <div className="resource-pill">
-            Crystals · {crystals.toLocaleString()}
-          </div>
-          <div className="resource-pill">Tokens · {tokens.toLocaleString()}</div>
-        </div>
-      </nav>
       <header className="top-bar">
         <div className="brand">
           <h1>SpaceClicker</h1>
@@ -263,12 +226,14 @@ function App() {
           </div>
           <div className="panel">
             <h2>Inventory</h2>
-            <div className="inventory-row">
+            <div className="list">
               {inventoryItems.map((item) => (
-                <div className="inventory-card" key={item.name}>
-                  <div className="inventory-title">{item.name}</div>
+                <div className="list-item" key={item.name}>
+                  <div>
+                    <strong>{item.name}</strong>
+                    <span>{item.tag}</span>
+                  </div>
                   <div className="badge">{item.amount}</div>
-                  <span>{item.tag}</span>
                 </div>
               ))}
             </div>
@@ -400,12 +365,7 @@ function App() {
                   <strong>Main Menu</strong>
                   <span>Profile, save slots, themes</span>
                 </div>
-                <button
-                  className="button ghost"
-                  onClick={() => setActiveModal("settings")}
-                >
-                  Open
-                </button>
+                <div className="badge">Open</div>
               </div>
             </div>
           </div>
@@ -418,122 +378,11 @@ function App() {
           universes.
         </div>
         <div className="menu">
-          <button
-            className="button ghost"
-            onClick={() => setActiveModal("menu")}
-          >
-            Main Menu
-          </button>
-          <button
-            className="button ghost"
-            onClick={() => setActiveModal("leaderboard")}
-          >
-            Leaderboard
-          </button>
-          <button
-            className="button ghost"
-            onClick={() => setActiveModal("support")}
-          >
-            Support
-          </button>
+          <button className="button ghost">Main Menu</button>
+          <button className="button ghost">Leaderboard</button>
+          <button className="button ghost">Support</button>
         </div>
       </footer>
-      {activeModal === "menu" && (
-        <Modal
-          title="Main Menu"
-          description="Jump between game sections, manage saves, and swap themes."
-          onClose={closeModal}
-        >
-          <div className="modal-grid">
-            <div className="modal-card">
-              <strong>Profile</strong>
-              <span>Commander Nova</span>
-            </div>
-            <div className="modal-card">
-              <strong>Save Slots</strong>
-              <span>Slot A · Auto-save</span>
-            </div>
-            <div className="modal-card">
-              <strong>Theme</strong>
-              <span>Neon Galaxy</span>
-            </div>
-            <div className="modal-card">
-              <strong>Quit</strong>
-              <span>Return to launch bay</span>
-            </div>
-          </div>
-        </Modal>
-      )}
-      {activeModal === "leaderboard" && (
-        <Modal
-          title="Leaderboard"
-          description="Top galaxy captains across all universes."
-          onClose={closeModal}
-        >
-          <div className="modal-list">
-            <div className="list-item">
-              <strong>1. NovaPrime</strong>
-              <span>∞ 12 Universes</span>
-            </div>
-            <div className="list-item">
-              <strong>2. StarForge</strong>
-              <span>∞ 9 Universes</span>
-            </div>
-            <div className="list-item">
-              <strong>3. AstroLuxe</strong>
-              <span>∞ 8 Universes</span>
-            </div>
-          </div>
-        </Modal>
-      )}
-      {activeModal === "support" && (
-        <Modal
-          title="Support"
-          description="Need help? Reach the mission control team."
-          onClose={closeModal}
-        >
-          <div className="modal-list">
-            <div className="list-item">
-              <strong>Help Desk</strong>
-              <span>support@spaceclicker.game</span>
-            </div>
-            <div className="list-item">
-              <strong>Community</strong>
-              <span>discord.gg/spaceclicker</span>
-            </div>
-            <div className="list-item">
-              <strong>Status</strong>
-              <span>All systems online</span>
-            </div>
-          </div>
-        </Modal>
-      )}
-      {activeModal === "settings" && (
-        <Modal
-          title="Settings"
-          description="Tune audio, controls, and accessibility preferences."
-          onClose={closeModal}
-        >
-          <div className="modal-grid">
-            <div className="modal-card">
-              <strong>Sound FX</strong>
-              <span>Neon pulses · On</span>
-            </div>
-            <div className="modal-card">
-              <strong>Music</strong>
-              <span>Ambient synth · 60%</span>
-            </div>
-            <div className="modal-card">
-              <strong>Controls</strong>
-              <span>Touch + keyboard + controller</span>
-            </div>
-            <div className="modal-card">
-              <strong>Accessibility</strong>
-              <span>High contrast · Vibration</span>
-            </div>
-          </div>
-        </Modal>
-      )}
     </div>
   );
 }
