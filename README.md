@@ -6,8 +6,8 @@ SpaceClicker is a fast-paced idle/clicker game where you mine cosmic energy, upg
 
 - React-powered, animated galaxy clicker experience with a responsive, mobile-first layout.
 - Galaxy stage with orbiting planets, unlockable progression, and infinite universe tiers.
-- Full HUD with player stats, coins, money, crystals, and planet tokens.
-- Marketplace upgrades, inventory resources, and settings panels in a game-style UI.
+- Full HUD with player stats, coins, money, crystals, planet tokens, and live tap power.
+- Marketplace upgrades, inventory resources, control mappings, and settings panels in a game-style UI.
 - Stadium-style neon buttons with controller, keyboard, and touch-ready layout.
 
 ## Project Structure

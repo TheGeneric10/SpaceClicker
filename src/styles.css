@@ -25,6 +25,17 @@ body {
   color: #f7f9ff;
 }
 
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(#ffffff22 1px, transparent 1px),
+    radial-gradient(#ffffff11 1px, transparent 1px);
+  background-size: 120px 120px, 70px 70px;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
 #root {
   min-height: 100vh;
 }

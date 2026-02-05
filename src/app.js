@@ -1,4 +1,4 @@
-const { useMemo, useState } = React;
+const { useMemo, useState, useEffect, useCallback } = React;
 
 const rightPlanets = [
   { name: "Earth", className: "earth", level: 1 },
@@ -31,18 +31,27 @@ const universes = [
 const upgrades = [
   {
     name: "Hyper Tap",
-    description: "+1 energy per tap",
+    description: "+1 tap power",
     cost: 25,
+    effect: { tap: 1 },
   },
   {
     name: "Solar Forge",
-    description: "+2 energy per tap",
+    description: "+2 tap power",
     cost: 60,
+    effect: { tap: 2 },
   },
   {
     name: "Planetary Drones",
-    description: "+5 passive income",
+    description: "+5 passive energy",
     cost: 140,
+    effect: { passive: 5 },
+  },
+  {
+    name: "Nebula Market",
+    description: "+2 passive coins",
+    cost: 220,
+    effect: { coins: 2 },
   },
 ];
 
@@ -50,28 +59,87 @@ const inventoryItems = [
   { name: "Cosmic Ore", amount: 320, tag: "resource" },
   { name: "Stardust", amount: 98, tag: "material" },
   { name: "Warp Cells", amount: 14, tag: "power" },
+  { name: "Quantum Keys", amount: 4, tag: "unlock" },
 ];
+
+function PlanetLane({ planets, label, lockLevel }) {
+  return (
+    <div className="orbit-pill">
+      <div className="orbit-dots">
+        {planets.map((planet) => (
+          <div
+            key={planet.name}
+            className={`planet ${planet.className}`}
+            style={{ opacity: lockLevel >= planet.level ? 1 : 0.3 }}
+            title={`${planet.name} · Unlock Lv ${planet.level}`}
+          />
+        ))}
+      </div>
+      <span>{label}</span>
+    </div>
+  );
+}
+
+function StatCard({ label, value }) {
+  return (
+    <div className="stat-card">
+      <h4>{label}</h4>
+      <p>{value}</p>
+    </div>
+  );
+}
 
 function App() {
   const [energy, setEnergy] = useState(0);
-  const [level, setLevel] = useState(1);
   const [coins, setCoins] = useState(120);
   const [money, setMoney] = useState(75);
   const [crystals, setCrystals] = useState(12);
   const [tokens, setTokens] = useState(3);
   const [universeIndex, setUniverseIndex] = useState(0);
+  const [upgradeState, setUpgradeState] = useState({});
+
+  const level = useMemo(() => Math.floor(energy / 30) + 1, [energy]);
+
+  const tapPower = useMemo(() => {
+    return (
+      3 +
+      upgrades.reduce((total, upgrade) => {
+        const count = upgradeState[upgrade.name] || 0;
+        return total + (upgrade.effect.tap || 0) * count;
+      }, 0)
+    );
+  }, [upgradeState]);
+
+  const passiveEnergy = useMemo(() => {
+    return upgrades.reduce((total, upgrade) => {
+      const count = upgradeState[upgrade.name] || 0;
+      return total + (upgrade.effect.passive || 0) * count;
+    }, 1);
+  }, [upgradeState]);
+
+  const passiveCoins = useMemo(() => {
+    return upgrades.reduce((total, upgrade) => {
+      const count = upgradeState[upgrade.name] || 0;
+      return total + (upgrade.effect.coins || 0) * count;
+    }, 0);
+  }, [upgradeState]);
 
   const unlockedPlanets = useMemo(() => {
     return rightPlanets.filter((planet) => level >= planet.level);
   }, [level]);
 
-  const handleTap = () => {
-    setEnergy((prev) => prev + 3);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setEnergy((prev) => prev + passiveEnergy);
+      setCoins((prev) => prev + passiveCoins);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [passiveEnergy, passiveCoins]);
+
+  const handleTap = useCallback(() => {
+    setEnergy((prev) => prev + tapPower);
     setCoins((prev) => prev + 1);
-    if ((energy + 3) % 30 === 0) {
-      setLevel((prev) => prev + 1);
-    }
-  };
+  }, [tapPower]);
 
   const handleUpgrade = (upgrade) => {
     if (coins < upgrade.cost) {
@@ -81,12 +149,33 @@ function App() {
     setMoney((prev) => prev + 10);
     setCrystals((prev) => prev + 2);
     setTokens((prev) => prev + 1);
+    setUpgradeState((prev) => ({
+      ...prev,
+      [upgrade.name]: (prev[upgrade.name] || 0) + 1,
+    }));
   };
 
-  const handleUniverseJump = () => {
+  const handleUniverseJump = useCallback(() => {
     setUniverseIndex((prev) => (prev + 1) % universes.length);
-    setLevel((prev) => prev + 3);
-  };
+    setEnergy((prev) => prev + 45);
+  }, []);
+
+  useEffect(() => {
+    const handleKey = (event) => {
+      if (event.repeat) {
+        return;
+      }
+      if (event.code === "Space") {
+        event.preventDefault();
+        handleTap();
+      }
+      if (event.code === "Enter") {
+        handleUniverseJump();
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [handleTap, handleUniverseJump]);
 
   return (
     <div className="app">
@@ -104,26 +193,13 @@ function App() {
             </div>
           </div>
           <div className="stat-grid">
-            <div className="stat-card">
-              <h4>Energy</h4>
-              <p>{energy.toLocaleString()}</p>
-            </div>
-            <div className="stat-card">
-              <h4>Coins</h4>
-              <p>{coins.toLocaleString()}</p>
-            </div>
-            <div className="stat-card">
-              <h4>Money</h4>
-              <p>${money.toLocaleString()}</p>
-            </div>
-            <div className="stat-card">
-              <h4>Crystals</h4>
-              <p>{crystals.toLocaleString()}</p>
-            </div>
-            <div className="stat-card">
-              <h4>Planet Tokens</h4>
-              <p>{tokens.toLocaleString()}</p>
-            </div>
+            <StatCard label="Energy" value={energy.toLocaleString()} />
+            <StatCard label="Coins" value={coins.toLocaleString()} />
+            <StatCard label="Money" value={`$${money.toLocaleString()}`} />
+            <StatCard label="Crystals" value={crystals.toLocaleString()} />
+            <StatCard label="Planet Tokens" value={tokens.toLocaleString()} />
+            <StatCard label="Tap Power" value={`+${tapPower}`} />
+            <StatCard label="Energy / sec" value={`+${passiveEnergy}`} />
           </div>
         </div>
       </header>
@@ -141,6 +217,7 @@ function App() {
                 <button
                   className="button"
                   onClick={() => handleUpgrade(upgrade)}
+                  disabled={coins < upgrade.cost}
                 >
                   Buy · {upgrade.cost}c
                 </button>
@@ -161,42 +238,55 @@ function App() {
               ))}
             </div>
           </div>
+          <div className="panel">
+            <h2>Controls</h2>
+            <div className="list">
+              <div className="list-item">
+                <div>
+                  <strong>Touch / Click</strong>
+                  <span>Tap the star to earn energy</span>
+                </div>
+                <div className="badge">Primary</div>
+              </div>
+              <div className="list-item">
+                <div>
+                  <strong>Keyboard</strong>
+                  <span>Space to tap, Enter to jump</span>
+                </div>
+                <div className="badge">Mapped</div>
+              </div>
+              <div className="list-item">
+                <div>
+                  <strong>Controller</strong>
+                  <span>Right trigger to tap, A to jump</span>
+                </div>
+                <div className="badge">Ready</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="galaxy-stage">
-          <div className="clicker-core" onClick={handleTap}>
+          <div className="clicker-core" onPointerDown={handleTap}>
             <div className="core-label">
               Tap the Star<br />
-              +3 Energy
+              +{tapPower} Energy
             </div>
           </div>
           <div className="orbits">
             <div className="orbit-row">
-              <div className="orbit-pill">
-                {leftPlanets.map((planet) => (
-                  <div
-                    key={planet.name}
-                    className={`planet ${planet.className}`}
-                    title={`${planet.name} · Lv ${planet.level}`}
-                  />
-                ))}
-                <span>{leftPlanets.map((planet) => planet.name).join(" · ")}</span>
-              </div>
+              <PlanetLane
+                planets={leftPlanets}
+                label="Venus · Mercury · Sun"
+                lockLevel={level}
+              />
             </div>
             <div className="orbit-row">
-              <div className="orbit-pill">
-                {rightPlanets.map((planet) => (
-                  <div
-                    key={planet.name}
-                    className={`planet ${planet.className}`}
-                    style={{ opacity: level >= planet.level ? 1 : 0.3 }}
-                    title={`${planet.name} · Unlock Lv ${planet.level}`}
-                  />
-                ))}
-                <span>
-                  {rightPlanets.map((planet) => planet.name).join(" · ")}
-                </span>
-              </div>
+              <PlanetLane
+                planets={rightPlanets}
+                label="Earth · Mars · Jupiter · Saturn · Uranus · Neptune · Pluto"
+                lockLevel={level}
+              />
             </div>
           </div>
           <div className="button-row">
@@ -224,6 +314,13 @@ function App() {
                 <span>{universes[universeIndex]}</span>
               </div>
               <div className="badge">Active</div>
+            </div>
+            <div className="list-item">
+              <div>
+                <strong>Infinity Status</strong>
+                <span>Looped universe tiers</span>
+              </div>
+              <div className="badge">∞</div>
             </div>
           </div>
           <div className="universe-track">
@@ -262,6 +359,13 @@ function App() {
                   <span>High contrast & vibration</span>
                 </div>
                 <div className="badge">Ready</div>
+              </div>
+              <div className="list-item">
+                <div>
+                  <strong>Main Menu</strong>
+                  <span>Profile, save slots, themes</span>
+                </div>
+                <div className="badge">Open</div>
               </div>
             </div>
           </div>
